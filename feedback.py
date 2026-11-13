@@ -11,14 +11,14 @@ client = OpenAI(
 
 MODELS = [
     os.getenv("GEMINI_MODEL"),
-    "gemini-3.6-flash",
     "gemini-3.5-flash-lite",
+    "gemini-4-hydrogen",
 ]
 
 def get_feedback(question, transcript):
     prompt = f"""You are an interview coach.
 Question: {question}
-Candidate's answer: {transcript}
+Candidate's answer (from speech-to-text, so names, acronyms and technical terms may be mis-transcribed; do not penalize those): {transcript}
 
 Score the answer from 1-10 for relevance, structure and depth.
 Reply ONLY with JSON in this format, no other text:
@@ -38,6 +38,6 @@ Reply ONLY with JSON in this format, no other text:
                 return json.loads(reply)
             except Exception as e:
                 print(f"{model} attempt {attempt + 1} failed: {str(e)[:100]}")
-                time.sleep(3)
+                time.sleep(10 * (attempt + 1))
 
     return {"error": "All models are busy. Try again later."}
