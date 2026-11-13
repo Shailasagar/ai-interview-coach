@@ -1,0 +1,35 @@
+{
+  "question": "Tell me about yourself.",
+  "voice": {
+    "transcript": "Myself Shalasagar currently pursuing BTEC in Computer Science and Engineering from IGM University, Goalier. I have experienced in data analysis, internship and web development internships and I also have practical knowledge through projects. I have developed projects like, CREDIFI, Student Achievement, Tracking Platform and AI, AI Platform, AI Fraud Detection System where we check fraud, banking fraud and then AI Voice Assistance.",
+    "word_count": 62,
+    "wpm": 84,
+    "fillers": {
+      "um": 0,
+      "uh": 0,
+      "like": 1,
+      "you know": 0
+    },
+    "pauses": [
+      {
+        "at_seconds": 6.8,
+        "length_seconds": 0.8
+      },
+      {
+        "at_seconds": 18.3,
+        "length_seconds": 1.2
+      },
+      {
+        "at_seconds": 27.3,
+        "length_seconds": 2.9
+      }
+    ]
+  },
+  "feedback": {
+    "relevance": 6,
+    "structure": 4,
+    "depth": 3,
+    "strengths": "Covers relevant Computer Science education, highlights practical exposure through internships, and showcases initiative across multiple technical projects in AI and web development.",
+    "improvements": "Replace 'Myself [Name]' with 'I am [Name]'. Use a clear Present-Past-Future structure and conclude by connecting your background to the role you are applying for. Add depth by mentioning the technologies used, your specific contributions, and measurable results from your internships and key projects instead of just listing project names."
+  }
+}
