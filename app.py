@@ -57,10 +57,7 @@ if st.button("Analyze my answer"):
         st.subheader("Filler words")
         st.write(voice["fillers"])
 
-        if voice["pauses"]:
-            st.subheader("Pauses")
-            for p in voice["pauses"]:
-                st.write(f"At {p['at_seconds']}s: {p['length_seconds']}s pause")
+
         ac = voice.get("acoustics")
         if ac and "error" not in ac:
             st.subheader("Pitch and volume")
@@ -74,6 +71,17 @@ if st.button("Analyze my answer"):
                 "These are acoustic observations, not proof of confidence or emotion. "
                 "Microphone distance and room noise affect them."
             )
+        icon = {"green": "🟢", "yellow": "🟡", "red": "🔴"}.get(voice.get("status"), "")
+        st.subheader(f"{icon} Delivery status")
+        st.caption(
+            "Illustrative thresholds, not pass or fail. Fillers are matched by word, "
+            "so a legitimate 'like' also counts."
+        )
+        if voice.get("events"):
+            st.subheader("Timeline of observations")
+            for e in voice["events"]:
+                mm, ss = int(e["time_s"] // 60), int(e["time_s"] % 60)
+                st.write(f"**{mm:02d}:{ss:02d}** · {e['type']} · {e['detail']}")    
         st.subheader("AI feedback")
         if "error" in feedback:
             st.error(feedback["error"])

@@ -134,12 +134,16 @@ else:
         with st.expander(f"Q{n}: {r['question']}"):
             st.write("**Transcript:**", r["voice"]["transcript"])
             st.write(f"**WPM:** {r['voice']['wpm']}")
+            icon = {"green": "🟢", "yellow": "🟡", "red": "🔴"}.get(r["voice"].get("status"), "")
+            st.write(f"**Delivery status:** {icon}")
+            for e in r["voice"].get("events", []):
+                mm, ss = int(e["time_s"] // 60), int(e["time_s"] % 60)
+                st.write(f"{mm:02d}:{ss:02d} · {e['type']} · {e['detail']}")
             ac = r["voice"].get("acoustics")
             if ac and "error" not in ac:
                 st.write(f"**Pitch:** {ac['pitch_note']}")
                 st.write(f"**Volume:** {ac['volume_note']}")
-            for p in r["voice"]["pauses"]:
-                st.write(f"Pause at {p['at_seconds']}s ({p['length_seconds']}s)")
+            
             fb = r["feedback"]
             if "error" in fb:
                 st.error(fb["error"])
