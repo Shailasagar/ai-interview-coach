@@ -2,10 +2,12 @@ import json
 from analyzer import analyze_audio
 from feedback import get_feedback
 from resume_check import extract_resume_text, check_resume_match
+from acoustics import analyze_acoustics
 
 
 def run_pipeline(audio_path, question, resume_path=None):
     voice = analyze_audio(audio_path)
+    voice["acoustics"] = analyze_acoustics(audio_path)
     feedback = get_feedback(question, voice["transcript"])
     report = {"question": question, "voice": voice, "feedback": feedback}
 

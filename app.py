@@ -61,7 +61,19 @@ if st.button("Analyze my answer"):
             st.subheader("Pauses")
             for p in voice["pauses"]:
                 st.write(f"At {p['at_seconds']}s: {p['length_seconds']}s pause")
-
+        ac = voice.get("acoustics")
+        if ac and "error" not in ac:
+            st.subheader("Pitch and volume")
+            a1, a2, a3 = st.columns(3)
+            a1.metric("Pitch variation (semitones)", ac["pitch_variation_semitones"])
+            a2.metric("Volume variation (dB)", ac["volume_variation_db"])
+            a3.metric("Drop at end (dB)", ac["trailing_off_db"])
+            st.write(ac["pitch_note"])
+            st.write(ac["volume_note"])
+            st.caption(
+                "These are acoustic observations, not proof of confidence or emotion. "
+                "Microphone distance and room noise affect them."
+            )
         st.subheader("AI feedback")
         if "error" in feedback:
             st.error(feedback["error"])

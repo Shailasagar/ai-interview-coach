@@ -130,6 +130,10 @@ else:
         with st.expander(f"Q{n}: {r['question']}"):
             st.write("**Transcript:**", r["voice"]["transcript"])
             st.write(f"**WPM:** {r['voice']['wpm']}")
+            ac = r["voice"].get("acoustics")
+            if ac and "error" not in ac:
+                st.write(f"**Pitch:** {ac['pitch_note']}")
+                st.write(f"**Volume:** {ac['volume_note']}")
             for p in r["voice"]["pauses"]:
                 st.write(f"Pause at {p['at_seconds']}s ({p['length_seconds']}s)")
             fb = r["feedback"]
