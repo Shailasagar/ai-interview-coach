@@ -43,3 +43,51 @@ Reply ONLY with JSON in this format, no other text:
                 time.sleep(10 * (attempt + 1))
 
     return {"error": "All models are busy. Try again later."}
+def generate_questions(resume_text, count=5):
+    import random
+
+    angles = [
+        "a specific project and the candidate's personal contribution",
+        "an internship or work experience and what they achieved",
+        "a technical skill or tool listed and how they used it",
+        "a challenge, trade-off or mistake in a project",
+        "teamwork, leadership or initiative",
+        "an achievement, certification or result that can be explained in detail",
+        "career goals and why this field",
+    ]
+    chosen = ", ".join(random.sample(angles, 4))
+
+    prompt = f"""You are an interviewer preparing a mock interview.
+
+Resume:
+{resume_text}
+
+Write {count} interview questions for this candidate. Rules:
+- Question 1 is a friendly opener, such as an introduction or motivation question, worded differently every time.
+- The other questions must refer to specific items from the resume (named projects, internships, skills).
+- Focus this time on: {chosen}.
+- Each question must be one or two sentences and answerable in about 1-2 minutes.
+- Variation seed: {random.randint(1000, 9999)}. Do not use the most obvious questions.
+Reply ONLY with a JSON list of {count} strings, no other text."""
+
+    for model in MODELS:
+        if not model:
+            continue
+        for attempt in range(2):
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=1.0,
+                )
+                reply = response.choices[0].message.content
+                reply = reply.replace("```json", "").replace("```", "").strip()
+                questions = json.loads(reply)
+                if isinstance(questions, list) and len(questions) >= count:
+                    return [str(q) for q in questions[:count]]
+            except Exception as e:
+                print(f"{model} question attempt {attempt + 1} failed: {str(e)[:60]}")
+                if "429" in str(e):
+                    break
+                time.sleep(5)
+    return None
