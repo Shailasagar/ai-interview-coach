@@ -4,7 +4,7 @@ import tempfile
 import streamlit as st
 from pipeline import run_pipeline
 from resume_check import extract_resume_text, generate_questions
-
+from datetime import datetime
 st.set_page_config(page_title="Mini-Mock Interview")
 st.title("Mini-Mock Interview")
 
@@ -58,6 +58,7 @@ if "questions" not in st.session_state:
             questions = random.sample(DEFAULT_POOL, NUM_QUESTIONS)
 
         st.session_state.questions = questions
+        st.session_state.session_id = datetime.now().strftime("%Y%m%d-%H%M%S")
         st.session_state.resume_bytes = resume_bytes
         st.session_state.index = 0
         st.session_state.reports = []
@@ -90,7 +91,10 @@ if i < total:
             resume_path = save_temp(resume_bytes, ".pdf") if resume_bytes else None
             try:
                 with st.spinner("Analyzing your answer... about a minute."):
-                    report = run_pipeline(audio_path, QUESTIONS[i], resume_path)
+                    report = run_pipeline(
+                        audio_path, QUESTIONS[i], resume_path,
+                        session_id=st.session_state.session_id, mode="mock",
+                    )
             finally:
                 os.remove(audio_path)
                 if resume_path:
@@ -151,6 +155,6 @@ else:
                 st.write("**Resume check:**", rc["summary"])
 
     if st.button("Start a new mock interview"):
-        for key in ["questions", "index", "reports", "resume_bytes", "notice"]:
+        for key in ["questions", "index", "reports", "resume_bytes", "notice", "session_id"]:
             st.session_state.pop(key, None)
         st.rerun()

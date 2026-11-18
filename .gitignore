@@ -5,3 +5,4 @@ __pycache__/
 report.json
 transcript.txt
 *.pdf
+*.db

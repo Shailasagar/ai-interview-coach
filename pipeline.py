@@ -1,3 +1,5 @@
+from datetime import datetime
+from db import save_answer
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -20,7 +22,7 @@ def safe_acoustics(audio_path):
         return {"error": str(e)[:80]}
 
 
-def run_pipeline(audio_path, question, resume_path=None):
+def run_pipeline(audio_path, question, resume_path=None, session_id=None, mode="single"):
     t0 = time.time()
     voice = analyze_audio(audio_path)
     t1 = time.time()
@@ -46,6 +48,10 @@ def run_pipeline(audio_path, question, resume_path=None):
     report = {"question": question, "voice": voice, "feedback": feedback}
     if resume_check is not None:
         report["resume_check"] = resume_check
+    try:
+        save_answer(report, session_id or datetime.now().strftime("%Y%m%d-%H%M%S"), mode)
+    except Exception as e:
+        print("DB save failed:", str(e)[:80])
     return report
 
 
