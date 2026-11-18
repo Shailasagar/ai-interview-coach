@@ -5,6 +5,7 @@ import streamlit as st
 from pipeline import run_pipeline
 from resume_check import extract_resume_text, generate_questions
 from datetime import datetime
+from live_indicator import render_indicator
 st.set_page_config(page_title="Mini-Mock Interview")
 st.title("Mini-Mock Interview")
 
@@ -79,7 +80,7 @@ if i < total:
     st.progress(i / total)
     st.subheader(f"Question {i + 1} of {total}")
     st.write(QUESTIONS[i])
-
+    render_indicator()
     audio = st.audio_input("Record your answer", key=f"audio_{i}")
 
     if st.button("Submit answer"):

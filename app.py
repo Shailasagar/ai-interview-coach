@@ -2,6 +2,7 @@ import os
 import tempfile
 import streamlit as st
 from pipeline import run_pipeline
+from live_indicator import render_indicator
 
 st.set_page_config(page_title="AI Interview Coach")
 st.title("AI Interview Coach")
@@ -13,7 +14,7 @@ QUESTIONS = [
     "Why should we hire you?",
 ]
 question = st.selectbox("Choose a question", QUESTIONS)
-
+render_indicator()
 recorded = st.audio_input("Record your answer")
 uploaded = st.file_uploader("...or upload an audio file", type=["mp3", "wav", "m4a"])
 resume = st.file_uploader("Resume (PDF, optional)", type=["pdf"])
