@@ -7,13 +7,17 @@ load_dotenv()
 client = OpenAI(
     api_key=os.getenv("GEMINI_API_KEY"),
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+    timeout=25,
+    max_retries=0,
 )
 
-MODELS = [
+MODELS = list(dict.fromkeys(m for m in [
     os.getenv("GEMINI_MODEL"),
     "gemini-3.5-flash-lite",
+    "gemini-3.6-flash",
     "gemini-4-hydrogen",
-]
+] if m))
+
 
 def get_feedback(question, transcript):
     prompt = f"""You are an interview coach.
@@ -25,9 +29,7 @@ Reply ONLY with JSON in this format, no other text:
 {{"relevance": 0, "structure": 0, "depth": 0, "strengths": "", "improvements": ""}}"""
 
     for model in MODELS:
-        if not model:
-            continue
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 response = client.chat.completions.create(
                     model=model,
@@ -37,7 +39,9 @@ Reply ONLY with JSON in this format, no other text:
                 reply = reply.replace("```json", "").replace("```", "").strip()
                 return json.loads(reply)
             except Exception as e:
-                print(f"{model} attempt {attempt + 1} failed: {str(e)[:100]}")
-                time.sleep(10 * (attempt + 1))
+                print(f"{model} attempt {attempt + 1} failed: {str(e)[:60]}")
+                if "429" in str(e) or "Connection" in str(e):
+                    break
+                time.sleep(5)
 
     return {"error": "All models are busy. Try again later."}

@@ -1,4 +1,4 @@
-import json, time
+import json, time, random
 import pdfplumber
 from feedback import client, MODELS
 
@@ -25,9 +25,7 @@ Reply ONLY with JSON in this format, no other text:
 {{"supported": [], "not_found_in_resume": [], "missed_highlights": [], "summary": ""}}"""
 
     for model in MODELS:
-        if not model:
-            continue
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 response = client.chat.completions.create(
                     model=model,
@@ -38,14 +36,14 @@ Reply ONLY with JSON in this format, no other text:
                 return json.loads(reply)
             except Exception as e:
                 print(f"{model} attempt {attempt + 1} failed: {str(e)[:60]}")
-                if "429" in str(e):
-                    break  # rate limited: go to the next model
-                time.sleep(10 * (attempt + 1))
+                if "429" in str(e) or "Connection" in str(e):
+                    break
+                time.sleep(5)
 
     return {"error": "All models are busy. Try again later."}
-def generate_questions(resume_text, count=5):
-    import random
 
+
+def generate_questions(resume_text, count=5):
     angles = [
         "a specific project and the candidate's personal contribution",
         "an internship or work experience and what they achieved",
@@ -71,8 +69,6 @@ Write {count} interview questions for this candidate. Rules:
 Reply ONLY with a JSON list of {count} strings, no other text."""
 
     for model in MODELS:
-        if not model:
-            continue
         for attempt in range(2):
             try:
                 response = client.chat.completions.create(
@@ -87,7 +83,7 @@ Reply ONLY with a JSON list of {count} strings, no other text."""
                     return [str(q) for q in questions[:count]]
             except Exception as e:
                 print(f"{model} question attempt {attempt + 1} failed: {str(e)[:60]}")
-                if "429" in str(e):
+                if "429" in str(e) or "Connection" in str(e):
                     break
                 time.sleep(5)
     return None

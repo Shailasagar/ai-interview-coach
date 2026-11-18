@@ -1,20 +1,51 @@
 import json
+import time
+from concurrent.futures import ThreadPoolExecutor
 from analyzer import analyze_audio
 from feedback import get_feedback
 from resume_check import extract_resume_text, check_resume_match
-from acoustics import analyze_acoustics
+
+try:
+    from acoustics import analyze_acoustics
+except Exception:
+    analyze_acoustics = None
+
+
+def safe_acoustics(audio_path):
+    if analyze_acoustics is None:
+        return None
+    try:
+        return analyze_acoustics(audio_path)
+    except Exception as e:
+        return {"error": str(e)[:80]}
 
 
 def run_pipeline(audio_path, question, resume_path=None):
+    t0 = time.time()
     voice = analyze_audio(audio_path)
-    voice["acoustics"] = analyze_acoustics(audio_path)
-    feedback = get_feedback(question, voice["transcript"])
+    t1 = time.time()
+    print(f"TIMING transcription: {t1 - t0:.1f}s")
+
+    transcript = voice["transcript"]
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        ac_future = pool.submit(safe_acoustics, audio_path)
+        fb_future = pool.submit(get_feedback, question, transcript)
+        rc_future = None
+        if resume_path:
+            resume_text = extract_resume_text(resume_path)
+            rc_future = pool.submit(check_resume_match, transcript, resume_text)
+
+        feedback = fb_future.result()
+        resume_check = rc_future.result() if rc_future else None
+        acoustics = ac_future.result()
+    print(f"TIMING pitch/volume + gemini: {time.time() - t1:.1f}s")
+
+    if acoustics is not None:
+        voice["acoustics"] = acoustics
+
     report = {"question": question, "voice": voice, "feedback": feedback}
-
-    if resume_path:
-        resume_text = extract_resume_text(resume_path)
-        report["resume_check"] = check_resume_match(voice["transcript"], resume_text)
-
+    if resume_check is not None:
+        report["resume_check"] = resume_check
     return report
 
 
@@ -25,6 +56,5 @@ if __name__ == "__main__":
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     print("WPM:", report["voice"]["wpm"])
-    print("Pauses:", len(report["voice"]["pauses"]))
     print("Feedback:", report["feedback"])
     print("Resume check:", report.get("resume_check"))
