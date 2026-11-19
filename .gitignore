@@ -6,3 +6,4 @@ report.json
 transcript.txt
 *.pdf
 *.db
+test_results.csv
